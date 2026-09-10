@@ -21,9 +21,10 @@
         <span>Criandos Sites</span>
       </a>
       <nav aria-label="Links da comunidade">
+        <a href="#projetos">Projetos</a>
         <a href="https://github.com/Criandos-Sites" target="_blank" rel="noreferrer">GitHub</a>
         <a href="https://github.com/Criandos-Sites/resources/discussions" target="_blank" rel="noreferrer">Conversas</a>
-        <a class="nav-cta" href="https://github.com/Criandos-Sites/resources/issues/new" target="_blank" rel="noreferrer">Sugerir conteúdo</a>
+        <a class="nav-cta" href="#enviar-projeto">Compartilhar projeto</a>
       </nav>
     </header>
 
@@ -39,10 +40,31 @@
         </div>
       </section>
 
+      <section class="showcase" id="projetos" aria-labelledby="showcase-title">
+        <div class="showcase-heading">
+          <div>
+            <p class="section-number">01 — FEITO PELA COMUNIDADE</p>
+            <h2 id="showcase-title">Páginas que saíram do grupo e ganharam o mundo.</h2>
+          </div>
+          <p>Conheça sites publicados pelos participantes. Cada projeto pode incluir o código, quando o criador quiser compartilhá-lo.</p>
+        </div>
+
+        <div id="project-grid" class="project-grid" aria-live="polite"></div>
+
+        <div id="project-empty" class="project-empty" hidden>
+          <div>
+            <span class="empty-kicker">A vitrine está aberta</span>
+            <h3>Compartilhe a primeira página</h3>
+            <p>Envie o endereço do site. O código-fonte é bem-vindo, mas não é obrigatório.</p>
+          </div>
+          <a href="#enviar-projeto">Adicionar meu projeto <span aria-hidden="true">↓</span></a>
+        </div>
+      </section>
+
       <section class="catalog-shell" id="catalogo" aria-labelledby="catalog-title">
         <div class="catalog-heading">
           <div>
-            <p class="section-number">01 — CATÁLOGO</p>
+            <p class="section-number">02 — CATÁLOGO</p>
             <h2 id="catalog-title">Explore a coleção</h2>
           </div>
           <p id="result-count" class="result-count" aria-live="polite"></p>
@@ -74,13 +96,44 @@
         </div>
       </section>
 
-      <section class="contribute" aria-labelledby="contribute-title">
-        <p class="section-number">02 — COMUNIDADE</p>
-        <div>
-          <h2 id="contribute-title">Encontrou algo que merece estar aqui?</h2>
-          <p>Envie o link e uma descrição curta. A comunidade ajuda a revisar e organizar.</p>
+      <section class="submit-project" id="enviar-projeto" aria-labelledby="contribute-title">
+        <div class="submit-intro">
+          <p class="section-number">03 — COMPARTILHE SEU PROJETO</p>
+          <h2 id="contribute-title">Coloque sua página na vitrine.</h2>
+          <p>Preencha os dados abaixo. Você pode enviar a sugestão pelo WhatsApp ou pelo GitHub.</p>
+          <div class="optional-note">
+            <span aria-hidden="true">&lt;/&gt;</span>
+            <p><strong>O código é opcional.</strong> Seu projeto pode entrar na vitrine mesmo que o repositório seja privado ou não exista.</p>
+          </div>
         </div>
-        <a href="https://github.com/Criandos-Sites/resources/issues/new" target="_blank" rel="noreferrer">Enviar uma sugestão <span aria-hidden="true">↗</span></a>
+
+        <form id="project-form" class="project-form">
+          <div class="field">
+            <label for="project-name">Nome do projeto <span>obrigatório</span></label>
+            <input id="project-name" name="name" required autocomplete="off" placeholder="Ex.: Site da Padaria Aurora" />
+          </div>
+          <div class="field">
+            <label for="project-url">Link da página <span>obrigatório</span></label>
+            <input id="project-url" name="url" type="url" required placeholder="https://meusite.com.br" />
+          </div>
+          <div class="field field-wide">
+            <label for="project-description">Descrição curta <span>obrigatório</span></label>
+            <textarea id="project-description" name="description" required rows="3" maxlength="240" placeholder="Conte em poucas palavras o que você criou."></textarea>
+          </div>
+          <div class="field">
+            <label for="project-author">Seu nome <span>opcional</span></label>
+            <input id="project-author" name="author" autocomplete="name" placeholder="Como quer aparecer na vitrine" />
+          </div>
+          <div class="field">
+            <label for="project-code">Link do código <span>opcional</span></label>
+            <input id="project-code" name="code" type="url" placeholder="https://github.com/usuario/projeto" />
+          </div>
+          <div class="form-actions field-wide">
+            <button class="primary-action" type="submit">Compartilhar no WhatsApp <span aria-hidden="true">↗</span></button>
+            <button class="secondary-action" id="submit-github" type="button">Enviar pelo GitHub</button>
+          </div>
+          <p class="form-help field-wide">No WhatsApp, escolha o grupo Criandos Sites depois que o aplicativo abrir.</p>
+        </form>
       </section>
     </main>
 
