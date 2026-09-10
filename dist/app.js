@@ -57,6 +57,8 @@ const fallbackItems = [
   ["Vercel Skills", "https://github.com/vercel-labs/skills", "Ferramenta e catálogo aberto para agent skills.", "skills", "universal"],
 ].map(([name, url, description, type, category]) => ({ name, url, description, type, category }));
 
+const fallbackProjects = [];
+
 const state = {
   items: fallbackItems,
   type: "todos",
@@ -69,6 +71,8 @@ const resultCount = document.querySelector("#result-count");
 const emptyState = document.querySelector("#empty-state");
 const categoryFilters = document.querySelector("#category-filters");
 const search = document.querySelector("#search");
+const projectGrid = document.querySelector("#project-grid");
+const projectEmpty = document.querySelector("#project-empty");
 
 const normalize = (value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -120,6 +124,55 @@ function render() {
 function refresh() {
   renderCategories();
   render();
+}
+
+function safeUrl(value) {
+  try {
+    const url = new URL(value);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function renderProjects(projects = fallbackProjects) {
+  const validProjects = projects.filter((project) => safeUrl(project.url));
+  projectGrid.hidden = validProjects.length === 0;
+  projectEmpty.hidden = validProjects.length !== 0;
+  projectGrid.innerHTML = validProjects.map((project, index) => {
+    const codeUrl = safeUrl(project.code);
+    return `
+      <article class="project-card">
+        <div class="project-index">${String(index + 1).padStart(2, "0")}</div>
+        <div class="project-content">
+          <p class="project-author">${project.author ? `Por ${escapeHtml(project.author)}` : "Projeto da comunidade"}</p>
+          <h3>${escapeHtml(project.name)}</h3>
+          <p>${escapeHtml(project.description)}</p>
+          <div class="project-links">
+            <a class="visit-project" href="${safeUrl(project.url)}" target="_blank" rel="noreferrer">Visitar página <span aria-hidden="true">↗</span></a>
+            ${codeUrl ? `<a class="code-link" href="${codeUrl}" target="_blank" rel="noreferrer">Ver código &lt;/&gt;</a>` : ""}
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
+async function syncProjects() {
+  const response = await fetch("https://raw.githubusercontent.com/Criandos-Sites/projects/main/projects.json", { cache: "no-cache" });
+  if (!response.ok) throw new Error("Não foi possível carregar os projetos");
+  const projects = await response.json();
+  if (!Array.isArray(projects)) throw new Error("Formato de projetos inválido");
+  renderProjects(projects);
 }
 
 document.querySelector(".type-tabs").addEventListener("click", (event) => {
@@ -202,4 +255,42 @@ document.querySelector("#year").textContent = new Date().getFullYear();
 refresh();
 syncFromGitHub().catch(() => {
   document.querySelector("#sync-status").textContent = "Catálogo disponível";
+});
+
+renderProjects();
+syncProjects().catch(() => renderProjects());
+
+const projectForm = document.querySelector("#project-form");
+
+function projectSubmission() {
+  const data = new FormData(projectForm);
+  const name = data.get("name").trim();
+  const url = data.get("url").trim();
+  const description = data.get("description").trim();
+  const author = data.get("author").trim();
+  const code = data.get("code").trim();
+  const lines = [
+    "Quero compartilhar um projeto na vitrine Criandos Sites:",
+    "",
+    `Projeto: ${name}`,
+    `Página: ${url}`,
+    `Descrição: ${description}`,
+  ];
+  if (author) lines.push(`Criado por: ${author}`);
+  if (code) lines.push(`Código (opcional): ${code}`);
+  return { name, body: lines.join("\n") };
+}
+
+projectForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (!projectForm.reportValidity()) return;
+  const { body } = projectSubmission();
+  window.open(`https://wa.me/?text=${encodeURIComponent(body)}`, "_blank", "noopener,noreferrer");
+});
+
+document.querySelector("#submit-github").addEventListener("click", () => {
+  if (!projectForm.reportValidity()) return;
+  const { name, body } = projectSubmission();
+  const params = new URLSearchParams({ title: `[Projeto] ${name}`, body });
+  window.open(`https://github.com/Criandos-Sites/projects/issues/new?${params}`, "_blank", "noopener,noreferrer");
 });
