@@ -8,6 +8,7 @@ const labels = {
   resources: "Recurso",
   skills: "Skill",
   snippets: "Snippet",
+  links: "Link do grupo",
   ia: "IA",
   desenvolvimento: "Desenvolvimento",
   design: "Design",
@@ -25,6 +26,11 @@ const labels = {
   php: "PHP",
   react: "React",
   nextjs: "Next.js",
+  github: "GitHub",
+  "redes-sociais": "Redes sociais",
+  videos: "Vídeos",
+  marketing: "Marketing",
+  referencias: "Referências",
 };
 
 const fallbackItems = [
@@ -64,6 +70,7 @@ const state = {
   type: "todos",
   category: "todos",
   query: "",
+  itemLimit: 60,
 };
 
 const grid = document.querySelector("#catalog-grid");
@@ -73,6 +80,8 @@ const categoryFilters = document.querySelector("#category-filters");
 const search = document.querySelector("#search");
 const projectGrid = document.querySelector("#project-grid");
 const projectEmpty = document.querySelector("#project-empty");
+const moreItems = document.querySelector("#more-items");
+const moreProjects = document.querySelector("#more-projects");
 
 const normalize = (value) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
@@ -106,15 +115,16 @@ function render() {
   resultCount.textContent = `${items.length} ${items.length === 1 ? "item encontrado" : "itens encontrados"}`;
   grid.hidden = items.length === 0;
   emptyState.hidden = items.length !== 0;
-  grid.innerHTML = items.map((item) => `
+  moreItems.hidden = items.length <= state.itemLimit;
+  grid.innerHTML = items.slice(0, state.itemLimit).map((item) => `
     <article class="card" data-type="${item.type}">
       <div class="card-top">
         <span class="card-kind">${labels[item.type]}</span>
         <span class="card-category">${labels[item.category] || item.category}</span>
       </div>
-      <h3>${item.name}</h3>
-      <p>${item.description}</p>
-      <a class="card-link" href="${item.url}" target="_blank" rel="noreferrer">
+      <h3>${escapeHtml(item.name)}</h3>
+      <p>${escapeHtml(item.description)}</p>
+      <a class="card-link" href="${safeUrl(item.url)}" target="_blank" rel="noreferrer">
         <span>Abrir referência</span><span aria-hidden="true">↗</span>
       </a>
     </article>
@@ -146,9 +156,15 @@ function escapeHtml(value = "") {
 
 function renderProjects(projects = fallbackProjects) {
   const validProjects = projects.filter((project) => safeUrl(project.url));
+  const visibleProjects = validProjects.slice(0, renderProjects.limit);
   projectGrid.hidden = validProjects.length === 0;
   projectEmpty.hidden = validProjects.length !== 0;
-  projectGrid.innerHTML = validProjects.map((project, index) => {
+  moreProjects.hidden = validProjects.length <= renderProjects.limit;
+  moreProjects.onclick = () => {
+    renderProjects.limit += 12;
+    renderProjects(validProjects);
+  };
+  projectGrid.innerHTML = visibleProjects.map((project, index) => {
     const codeUrl = safeUrl(project.code);
     return `
       <article class="project-card">
@@ -166,6 +182,7 @@ function renderProjects(projects = fallbackProjects) {
     `;
   }).join("");
 }
+renderProjects.limit = 12;
 
 async function syncProjects() {
   const response = await fetch("https://raw.githubusercontent.com/Criandos-Sites/projects/main/projects.json", { cache: "no-cache" });
@@ -180,6 +197,7 @@ document.querySelector(".type-tabs").addEventListener("click", (event) => {
   if (!button) return;
   state.type = button.dataset.type;
   state.category = "todos";
+  state.itemLimit = 60;
   document.querySelectorAll(".type-tab").forEach((tab) => {
     const active = tab === button;
     tab.classList.toggle("is-active", active);
@@ -192,11 +210,13 @@ categoryFilters.addEventListener("click", (event) => {
   const button = event.target.closest("[data-category]");
   if (!button) return;
   state.category = button.dataset.category;
+  state.itemLimit = 60;
   refresh();
 });
 
 search.addEventListener("input", () => {
   state.query = search.value;
+  state.itemLimit = 60;
   render();
 });
 
@@ -211,6 +231,7 @@ document.querySelector("#clear-filters").addEventListener("click", () => {
   state.query = "";
   state.type = "todos";
   state.category = "todos";
+  state.itemLimit = 60;
   search.value = "";
   document.querySelectorAll(".type-tab").forEach((tab) => {
     const active = tab.dataset.type === "todos";
@@ -218,6 +239,11 @@ document.querySelector("#clear-filters").addEventListener("click", () => {
     tab.setAttribute("aria-selected", String(active));
   });
   refresh();
+});
+
+moreItems.addEventListener("click", () => {
+  state.itemLimit += 60;
+  render();
 });
 
 function parseMarkdown(markdown, type, category) {
@@ -243,6 +269,15 @@ async function syncFromGitHub() {
 
   const results = await Promise.allSettled(requests);
   const remoteItems = results.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+  try {
+    const response = await fetch("https://raw.githubusercontent.com/Criandos-Sites/projects/main/links.json", { cache: "no-cache" });
+    if (response.ok) {
+      const groupLinks = await response.json();
+      if (Array.isArray(groupLinks)) remoteItems.push(...groupLinks);
+    }
+  } catch {
+    // Os repositórios de recursos continuam disponíveis se a lista geral falhar.
+  }
   if (!remoteItems.length) return;
 
   const unique = new Map(remoteItems.map((item) => [item.url.toLowerCase(), item]));
