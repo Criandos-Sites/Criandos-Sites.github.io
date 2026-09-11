@@ -255,6 +255,8 @@ kbd { position: absolute; right: 18px; padding: 2px 9px; color: var(--muted); ba
 .card[data-type="skills"] { --accent: var(--violet); }
 .card[data-type="snippets"] { --accent: var(--lime); }
 .card[data-type="links"] { --accent: #ffb86b; }
+.card[data-type="projects"] { --accent: var(--cyan); }
+.card-author { margin: -4px 0 10px !important; color: var(--cyan) !important; font-size: 0.75rem !important; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
 
 .more-button {
   display: block;

@@ -8,7 +8,8 @@ const labels = {
   resources: "Recurso",
   skills: "Skill",
   snippets: "Snippet",
-  links: "Link do grupo",
+  links: "Referência do grupo",
+  projects: "Projeto da comunidade",
   ia: "IA",
   desenvolvimento: "Desenvolvimento",
   design: "Design",
@@ -31,6 +32,22 @@ const labels = {
   videos: "Vídeos",
   marketing: "Marketing",
   referencias: "Referências",
+  "ia-automacao": "IA e automação",
+  "design-ui": "Design e UI",
+  "marketing-vendas": "Marketing e vendas",
+  "seo-performance": "SEO e performance",
+  negocios: "Negócios",
+  educacao: "Educação",
+  ferramentas: "Ferramentas",
+  "saude-bem-estar": "Saúde e bem-estar",
+  "beleza-estetica": "Beleza e estética",
+  "servicos-profissionais": "Serviços profissionais",
+  "portfolio-agencia": "Portfólio e agência",
+  tecnologia: "Tecnologia",
+  comercio: "Comércio",
+  alimentacao: "Alimentação",
+  entretenimento: "Entretenimento",
+  "projetos-comunidade": "Outros projetos",
 };
 
 const fallbackItems = [
@@ -123,6 +140,7 @@ function render() {
         <span class="card-category">${labels[item.category] || item.category}</span>
       </div>
       <h3>${escapeHtml(item.name)}</h3>
+      ${item.author ? `<p class="card-author">Por ${escapeHtml(item.author)}</p>` : ""}
       <p>${escapeHtml(item.description)}</p>
       <a class="card-link" href="${safeUrl(item.url)}" target="_blank" rel="noreferrer">
         <span>Abrir referência</span><span aria-hidden="true">↗</span>
